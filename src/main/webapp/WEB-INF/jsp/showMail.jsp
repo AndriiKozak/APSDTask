@@ -19,6 +19,6 @@
             </tr>           
         </table> 
         ${result.body}<br/>
-        <form action="searcMail"><input type="submit" value="Back to search"/></form>
+        <form action="searchMail"><input type="submit" value="Back to search"/></form>
     </body>
 </html>
