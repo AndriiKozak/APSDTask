@@ -18,7 +18,11 @@ public class MyController {
     @Autowired
     private EMailRetrivingService eMailRetrivingService;
     @Autowired
-    private EMailStoringSevice eMailStoringSevice;
+    private EMailStoringService eMailStoringSevice;
+    @Autowired
+    private EMailSearchService eMailSearchService;
+    @Autowired
+    private LastCheckedService lastCheckedService;
     
     @RequestMapping("/showMail")
     public String showMail(@RequestParam(value = "id", required = true) Long id, Model model) {
@@ -38,13 +42,13 @@ public class MyController {
         model.addAttribute("pafter", after);
         model.addAttribute("pbefore", before);
         
-        model.addAttribute("results", eMailStoringSevice.searcEMail(from, subject, after, before).collect(Collectors.toList()));
+        model.addAttribute("results", eMailSearchService.searchEMail(from, subject, after, before).collect(Collectors.toList()));
         return "searchMail";
     }
 
     @RequestMapping("/checkMail")
     public String checkMail() throws Exception {        
-        Date cutoff = eMailStoringSevice.lastChecked();
+        Date cutoff = lastCheckedService.lastChecked();
         eMailStoringSevice.save(eMailRetrivingService.retrieve(cutoff).map(converter::convert).collect(Collectors.toList()));
         return "redirect:searchMail";
     }

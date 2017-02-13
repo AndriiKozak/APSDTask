@@ -5,18 +5,15 @@
  */
 package com.mycompany.apsdtask;
 
-import java.util.Date;
+import java.text.ParseException;
 import java.util.stream.Stream;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 
 /**
  *
  * @author Andrii_Kozak1
  */
-public interface EMailRetrivingService {
+public interface EMailSearchService {
 
-    Stream<Message> retrieve(Date cutoff) throws NoSuchProviderException, MessagingException;
+    Stream<EMail> searchEMail(String from, String subject, String after, String before) throws ParseException;
     
 }

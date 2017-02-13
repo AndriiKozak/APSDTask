@@ -6,17 +6,13 @@
 package com.mycompany.apsdtask;
 
 import java.util.Date;
-import java.util.stream.Stream;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 
 /**
  *
  * @author Andrii_Kozak1
  */
-public interface EMailRetrivingService {
+public interface LastCheckedService {
 
-    Stream<Message> retrieve(Date cutoff) throws NoSuchProviderException, MessagingException;
+    Date lastChecked();
     
 }
