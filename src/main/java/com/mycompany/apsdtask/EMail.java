@@ -27,20 +27,6 @@ public class EMail implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String body;
 
-    public EMail() {
-    }
-
-    public EMail(Message message) {
-        try {
-            author = ((InternetAddress) message.getFrom()[0]).getAddress();
-            date = message.getSentDate();
-            subject = message.getSubject();
-            Object contnet = message.getContent();
-            body = (contnet instanceof MimeMultipart) ? ((MimeMultipart) contnet).getBodyPart(0).getContent().toString() : contnet.toString();
-        } catch (IOException | MessagingException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public Long getId() {
         return id;

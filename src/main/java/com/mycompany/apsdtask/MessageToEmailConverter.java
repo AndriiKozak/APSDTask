@@ -10,11 +10,9 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
+import org.springframework.stereotype.Component;
 
-/**
- *
- * @author Andrii_Kozak1
- */
+@Component
 public class MessageToEmailConverter {
     EMail convert(Message message){
        EMail eMail = new EMail();
