@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.apsdtask.analytics;
 
 import java.io.BufferedWriter;
@@ -10,62 +5,72 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author Andrii_Kozak1
- */
 @Component
 public class TreadDumperDeamon implements Runnable {
-        boolean notInterrupted = true;
-        long timeOut;
-        Thread daemonThread;
-        Path path;
-    TreadDumperDeamon(@Value("10000")long timeout, @Value("dumps.txt")String dumppath){
+
+    boolean notInterrupted = true;
+    long timeOut;
+    Thread daemonThread;
+    Path path;
+
+    TreadDumperDeamon(@Value("300000") long timeout, @Value("dumps.txt") String dumppath) {
         this.timeOut = timeout;
-        System.out.println("on guard");
         daemonThread = new Thread(this);
         daemonThread.setDaemon(true);
         path = Paths.get(dumppath);
     }
+
     @PostConstruct
-    public void init(){
+    public void init() {
         daemonThread.start();
     }
+
     @Override
     public void run() {
-        while(notInterrupted){
-            try (BufferedWriter writer = Files.newBufferedWriter(path)){
+        final StringBuilder s = new StringBuilder();
+        while (notInterrupted) {
+
+            try (BufferedWriter writer = Files.newBufferedWriter(path, CREATE, APPEND)) {
                 Thread.sleep(timeOut);
-                Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
-                stackTrace.forEach((thread,element) ->{
-                    try {
-                        writer.newLine();
-                        writer.write(thread.toString());                        
-                        Arrays.stream(element).forEach((trace) -> {
-                            try {
-                                writer.write(trace.toString());
-                            } catch (IOException ex) {
-                                Logger.getLogger(TreadDumperDeamon.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        });
-                    } catch (IOException ex) {
-                        Logger.getLogger(TreadDumperDeamon.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                            });
+                String result = Thread.getAllStackTraces()
+                        .entrySet()
+                        .stream()
+                        .flatMap(entity -> Stream.concat(logThread(entity.getKey()), logStackTrace(entity.getValue())))
+                        .collect(Collectors.joining(LocalDateTime.now().toString()+System.lineSeparator(), System.lineSeparator(), System.lineSeparator()));               
+                writer.write(result);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             } catch (InterruptedException ex) {
                 notInterrupted = false;
-            } catch (IOException ex) {
-                Logger.getLogger(TreadDumperDeamon.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
     }
-    
+
+    private static Stream<String> logThread(Thread thread) {
+        return Stream.of(
+                Stream.of(thread.getId(), thread.getName(), thread.isDaemon(), thread.getPriority(), thread.getState())
+                        .map(Object::toString).collect(Collectors.joining(" ")));
+    }
+
+    private static Stream<String> logStackTrace(StackTraceElement[] array) {
+        return Arrays.stream(array).map(StackTraceElement::toString);
+    }
+
+    @PreDestroy
+    public void Destroy() {
+        daemonThread.interrupt();
+    }
 }
