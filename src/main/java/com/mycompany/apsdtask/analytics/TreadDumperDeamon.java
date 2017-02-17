@@ -9,7 +9,6 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
@@ -20,10 +19,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class TreadDumperDeamon implements Runnable {
 
-    boolean notInterrupted = true;
-    long timeOut;
-    Thread daemonThread;
-    Path path;
+    private boolean notInterrupted = true;
+    private final long timeOut;
+    private final Thread daemonThread;
+    private final Path path;
 
     TreadDumperDeamon(@Value("300000") long timeout, @Value("dumps.txt") String dumppath) {
         this.timeOut = timeout;
